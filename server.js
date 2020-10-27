@@ -123,7 +123,7 @@ function viewEmployees(){
     });
   };
 
-  // Adds an employee into the database 
+  // Adding employee to the database 
 function addEmployee(){
   inquirer.prompt([
     {
@@ -147,7 +147,7 @@ function addEmployee(){
       message: "Who is the new employee's manager?"
     }
   ]).then(response => {
-      // takes response and puts it in createEmpDB function
+      // puts the response it in createEmpDB function
       createEmpDB(response);
       start();
     });
@@ -168,7 +168,7 @@ function createEmpDB(response){
   );
 };
 
-// Removes employee from database
+// Removing chosen employee from database
 function removeEmployee() {
 
   const employeesArr = [];
@@ -177,3 +177,27 @@ function removeEmployee() {
     for (i = 0; i < res.length; i++) {
       employeesArr.push(res[i].first_name + " " + res[i].last_name);
     }
+
+    inquirer.prompt([
+        {
+          type: "list",
+          name: "deleteEmployee",
+          message: "Which employee would you like to remove?",
+          choices: employeesArr
+        }
+      ]).then(response => {
+          connection.query("SELECT * FROM employee", function (err, res){
+            // Help from fellow students gave me excellent code.
+            const deletedEmployee = res.filter(employee => response.deleteEmployee === employee.first_name + " " + employee.last_name);
+            employeeID = deletedEmployee[0].id
+            connection.query(
+              "DELETE FROM employee WHERE id = ?", [employeeID],
+              function (err, res) {
+                if (err) throw err;
+                console.log("Employee has been removed." + "\n");
+                start();
+              });
+            })
+          }) 
+      })
+  };
