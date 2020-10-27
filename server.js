@@ -101,3 +101,79 @@ return connection.end();
 };
 })
 };
+
+// Joins data from role to add onto the console.table
+function viewEmployees(){
+    connection.query("SELECT first_name, last_name, title, salary, manager FROM employee LEFT JOIN role ON employee.role_id = role.id", function(err, res) {
+      if (err) throw err;
+      
+      let viewInfo = [];
+
+      for (i = 0; i < res.length; i++){
+         viewInfo.push({
+           first_name: res[i].first_name,
+           last_name: res[i].last_name,
+           title: res[i].title,
+           salary: res[i].salary,
+           manager: res[i].manager
+         })
+      }
+      console.table(viewInfo);
+      start();
+    });
+  };
+
+  // Adds an employee into the database 
+function addEmployee(){
+  inquirer.prompt([
+    {
+      type: "input",
+      name: "first_name",
+      message: "New Employee's First Name?"
+    },
+    {
+      type: "input",
+      name: "last_name",
+      message: "New Employee's Last Name?"
+    },
+    {
+      type: "number",
+      name: "role_id",
+      message: "What will be the Employee's role id?"
+    },
+    {
+      type: "input",
+      name: "manager",
+      message: "Who is the new employee's manager?"
+    }
+  ]).then(response => {
+      // takes response and puts it in createEmpDB function
+      createEmpDB(response);
+      start();
+    });
+};
+
+function createEmpDB(response){
+  console.log("\n" + "Adding the new employee into database." + "\n");
+  var query = connection.query("INSERT INTO employee SET ?",
+    {
+      first_name: response.first_name,
+      last_name: response.last_name,
+      role_id: response.role_id,
+      manager: response.manager
+    },
+    function(err, res) {
+      if (err) throw err;
+    }
+  );
+};
+
+// Removes employee from database
+function removeEmployee() {
+
+  const employeesArr = [];
+  connection.query("SELECT * FROM employee", function (err, res) {
+    if (err) throw err;
+    for (i = 0; i < res.length; i++) {
+      employeesArr.push(res[i].first_name + " " + res[i].last_name);
+    }
