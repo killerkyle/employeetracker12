@@ -201,3 +201,192 @@ function removeEmployee() {
           }) 
       })
   };
+
+  // Updates employee role
+function updateEmployee () {
+    const employeeArr = [];
+    connection.query("SELECT * FROM employee", function (err, res) {
+      if (err) throw err;
+      for (i=0; i < res.length; i++) {
+        employeeArr.push(res[i].first_name + " " + res[i].last_name);
+      }
+  
+      inquirer.prompt([
+        {
+          type: "list",
+          name: "updateEmployee",
+          message: "Which employee's role would you like to update?",
+          choices: employeeArr
+        },
+        {
+          type: "list",
+          name: "roleType",
+          message: "What role will this employee have?",
+          choices: rolesArr
+        }
+      ]).then(response => {
+        connection.query("SELECT * FROM employee", function (err, res){
+          if (err) throw err;
+          let updatedEmployee = res.filter(employee => response.updateEmployee === employee.first_name + " " + employee.last_name);
+          employeeID = updatedEmployee[0].id;
+  
+          connection.query("SELECT * FROM role", function (err, res) {
+            if (err) throw err;
+            let newRoleID = res.filter(employee => response.roleType === employee.title)[0].id;
+            
+            connection.query("UPDATE employee SET ? WHERE ?",
+              [
+                {
+                  role_id: newRoleID
+                },
+                {
+                  id: employeeID
+                }
+              ],
+              function (err, res) {
+                if (err) throw err;
+                console.log("\n" + "Employee role updated!" + "\n");
+                start();
+              });
+          });
+        })
+      })
+    })
+  };
+  
+  // view departments
+  function viewDepartments(){
+    let departmentsArr = [];
+    connection.query("SELECT * FROM department", function (err, res) {
+      if (err) throw err;
+      for (i = 0; i < res.length; i++) {
+        departmentsArr.push({
+          name: res[i].name
+        })
+      }
+      console.table(departmentsArr);
+      start();
+    })
+  };
+  
+  // Adds a department to the table in database
+  function addDepartment() {
+  
+    inquirer.prompt([
+        {
+          type: "input",
+          name: "newDepartment",
+          message: "Name of Department would you like to add?"
+        }
+      ]).then(response => {
+        connection.query("INSERT INTO department SET ?",
+          {
+            name: response.newDepartment
+          },
+          function (err, res) {
+            if (err) throw err;
+            console.log(response.newDepartment + " department has been added! \n");
+            start();
+          });
+      })
+  };
+  
+  // removes a department from database
+  function removeDepartment() {
+    let departmentsArr = [];
+    connection.query("SELECT * FROM department", function (err, res) {
+      if (err) throw err;
+      for (i = 0; i < res.length; i++) {
+        departmentsArr.push(res[i].name);
+      }
+  
+      inquirer.prompt([
+          {
+            type: "list",
+            name: "deletedDepartment",
+            message: "Which department would you like to remove?",
+            choices: departmentsArr
+          }
+        ]).then(response => {
+          connection.query("DELETE FROM department WHERE name = ?", response.deletedDepartment,
+            function (err, res) {
+              if (err) throw err;
+              console.log("\n" + "Department has been removed." + "\n");
+              start();
+            });
+        })
+    })
+  };
+  
+  // views the roles of jobs (title and salary)
+function viewRoles(){
+    let roleArr = [];
+    connection.query("SELECT * FROM role", function (err, res) {
+      if (err) throw err;
+      for (i = 0; i < res.length; i++) {
+        roleArr.push({
+          title: res[i].title,
+          salary: res[i].salary,
+        })
+      }
+      console.table(roleArr);
+      start();
+    });
+  };
+  
+  // adds a role to role database
+  function addRole() {
+    inquirer.prompt([
+        {
+          type: "input",
+          name: "newRole",
+          message: "What role would you like to add?"
+        },
+        {
+          type: "input",
+          name: "salary",
+          message: "What is the salary of this role?"
+        }
+      ]).then(response => {
+        connection.query("INSERT INTO role SET ?",
+          {
+            title: response.newRole,
+            salary: response.salary
+          },
+          function (err, res) {
+            if (err) throw err;
+            console.log(response.newRole + "  role added! \n");
+            start();
+          });
+      })
+  };
+  
+  // removes role from database
+  function removeRole() {
+    let roleArr = [];
+    connection.query("SELECT * FROM role", function (err, res) {
+      if (err) throw err;
+      for (i = 0; i < res.length; i++) {
+        roleArr.push(res[i].title);
+      }
+  
+      inquirer.prompt([
+        {
+          type: "list",
+          name: "removedRole",
+          message: "Which role would you like to remove?",
+          choices: roleArr
+        }
+      ]).then(response => {
+        connection.query( "DELETE FROM role WHERE ?",
+          {
+            title: response.removedRole
+          },
+          function (err, res) {
+            if (err) throw err;
+            console.log("\n" + "Role has been removed." + "\n")
+            start();
+          });
+      })
+    })
+  };
